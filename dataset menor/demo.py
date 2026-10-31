@@ -7,8 +7,8 @@ O script faz duas coisas:
   2. Mostra quanto as entregas atrasam e em que situações.
 
 Toda a saída é em português, com uma breve explicação de cada etapa.
-Como rodar (a partir da pasta do projeto, com o venv ativado):
-    python src/analise.py
+Como rodar (a partir da raiz do projeto):
+    python "dataset menor/demo.py"
 """
 
 from pathlib import Path
@@ -22,7 +22,7 @@ import pandas as pd
 # Caminho do CSV calculado a partir da localização deste arquivo.
 # Assim o script funciona de qualquer pasta em que o terminal estiver.
 RAIZ = Path(__file__).resolve().parents[1]
-ARQUIVO = RAIZ / "data" / "smart_logistics_dataset.csv"
+ARQUIVO = Path(__file__).resolve().parent / "smart_logistics_dataset.csv"
 
 # Nome de cada coluna em português e o que ela significa.
 COLUNAS = {
@@ -126,8 +126,13 @@ df = pd.read_csv(
     ARQUIVO,
     keep_default_na=False,
     na_values=[""],
-    parse_dates=["Timestamp"],
 )
+
+# Aceita cabeçalhos padronizados em minúsculas e usa os nomes internos esperados.
+nomes_originais = {nome.lower(): nome for nome in COLUNAS}
+df.columns = [coluna.strip().lower() for coluna in df.columns]
+df = df.rename(columns=nomes_originais)
+df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
 # Traduz os valores de texto e depois os nomes das colunas.
 for coluna, traducao in VALORES.items():

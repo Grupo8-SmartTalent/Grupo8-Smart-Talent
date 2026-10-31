@@ -58,11 +58,10 @@ import pandas as pd
 # Motivo: na versão anterior, as regras estavam espalhadas pelo código, e para
 # mudar um limite era preciso caçar a linha certa (problema de manutenção).
 
-# Caminhos calculados a partir da localização deste arquivo.
-# Problema evitado: com um caminho relativo como "data/arquivo.csv", o script
-# só funcionava se o terminal estivesse na pasta do projeto (FileNotFoundError).
+# O CSV de entrada fica junto deste script; assim, o padrão funciona de
+# qualquer diretório de onde o script seja executado.
 RAIZ = Path(__file__).resolve().parents[1]
-ARQUIVO_PADRAO = RAIZ / "data" / "smart_logistics_dataset.csv"
+ARQUIVO_PADRAO = Path(__file__).resolve().parent / "smart_logistics_dataset.csv"
 PASTA_SAIDA = RAIZ / "outputs"
 
 # Arquivos maiores que isso geram um aviso de desempenho.
@@ -475,7 +474,9 @@ def carregar(caminho: Path, rel: Relatorio) -> tuple:
         rel.aviso("acentos fora do padrão UTF-8 encontrados; arquivo relido como latin-1.")
         bruto = pd.read_csv(caminho, dtype=str, keep_default_na=False, sep=separador,
                             encoding=codificacao)
-    bruto.columns = [c.strip() for c in bruto.columns]
+    bruto.columns = [c.strip().casefold() for c in bruto.columns]
+    nomes_normalizados = {c.casefold(): c for c in ESQUEMA}
+    bruto = bruto.rename(columns={c: nomes_normalizados.get(c, c) for c in bruto.columns})
 
     # Confere se as colunas esperadas existem.
     faltando = [c for c in ESQUEMA if c not in bruto.columns]
@@ -1463,7 +1464,7 @@ def argumentos() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Auditoria e análise do dataset de logística (saída em português).")
     parser.add_argument("--arquivo", type=Path, default=ARQUIVO_PADRAO,
-                        help="caminho do CSV (padrão: data/smart_logistics_dataset.csv)")
+                        help="caminho do CSV (padrão: smart_logistics_dataset.csv ao lado deste script)")
     parser.add_argument("--saida", type=Path, default=PASTA_SAIDA,
                         help="pasta onde os arquivos de resultado serão gravados (padrão: outputs/)")
     parser.add_argument("--sem-arquivos", action="store_true",
