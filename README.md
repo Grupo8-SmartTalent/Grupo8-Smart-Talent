@@ -1,73 +1,47 @@
-# Grupo 8 — Smart Talent (DataCo Supply Chain & Access Logs)
+# Grupo 8 — Smart Talent
 
-Projeto de preparação, padronização e normalização dos datasets de cadeia de suprimentos (**DataCo Smart Supply Chain**) e logs de acesso tokenizados (**Tokenized Access Logs**).
+Análise exploratória do dataset DataCo Smart Supply Chain com Pandas: limpeza reproduzível, tabela-resumo por região e gráficos para apoiar decisões sobre risco e atraso de entrega.
 
----
+## Rodar localmente
 
-## Estrutura do Projeto
+Requer Python 3.11+.
 
-```text
-Grupo8-Smart-Talent/
-├── data/
-│   ├── DataCoSupplyChainDataset.csv       # Dataset bruto de pedidos e logística (180.519 linhas x 53 colunas)
-│   ├── DescriptionDataCoSupplyChain.csv   # Dicionário de dados oficial das colunas
-│   ├── tokenized_access_logs.csv          # Dataset bruto de logs de acesso (469.977 linhas x 8 colunas)
-│   └── processed/                         # Datasets finais padronizados e normalizados (1 CSV por base, UTF-8)
-├── src/
-│   └── script.py                          # Pipeline de limpeza, padronização e normalização in-place
-├── requirements.txt                       # Dependências do projeto (codificado em UTF-8)
-└── README.md                              # Documentação e instruções de execução
-```
-
----
-
-## Pré-requisitos
-
-- **Python 3.11+** (ambiente configurado com Python 3.13)
-- **pip** atualizado
-
----
-
-## Como Configurar e Rodar o Projeto
-
-### 1. Ativar o Ambiente Virtual (`venv`)
-
-Caso esteja na pasta raiz `Grupo8-Smart-Talent` no **Windows (PowerShell)**:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Ou via **Prompt de Comando (CMD)**:
-
-```cmd
-.\venv\Scripts\activate.bat
-```
-
-*(Caso ainda não possua um ambiente virtual criado, crie-o com `python -m venv venv` e ative-o com o comando acima).*
-
-### 2. Instalar as Dependências
-
-Entre no diretório do repositório e instale os pacotes listados no `requirements.txt`:
-
-```powershell
-cd Grupo8-Smart-Talent
+```bash
+python -m venv .venv
+# Linux/macOS
+source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+python src/pipeline.py --input data/DataCoSupplyChainDataset.csv --output outputs
 ```
 
-### 3. Executar o Script de Padronização e Normalização
+O dataset DataCo é disponibilizado em `data/DataCoSupplyChainDataset.csv`. Para manter o Git leve, CSVs ficam fora do versionamento; obtenha o dataset da fonte do projeto e coloque-o nesse caminho. A saída inclui `resumo_por_regiao.csv`, `risco_por_regiao.png` e `atraso_por_status.png`.
 
-Execute o script principal:
+## Decisões de limpeza
 
-```powershell
-python src/script.py
+1. Cabeçalhos são convertidos para minúsculas: facilita acesso consistente às colunas sem depender de capitalização.
+2. Métricas numéricas são convertidas com valores inválidos como ausentes, e linhas sem os campos essenciais são removidas: evita que registros incompletos distorçam taxas e médias.
+3. Duplicatas exatas são removidas para não contar o mesmo registro duas vezes.
+4. Vendas negativas são excluídas por não representarem venda válida para o resumo comercial.
+5. Atraso é calculado como dias reais menos dias programados e limitado a zero: entregas adiantadas não contam como atraso.
+
+## Docker
+
+Monte o diretório contendo o CSV em `/data` no container. Execute na raiz:
+
+```bash
+docker build -t grupo8-pipeline .
+docker run --rm -v "${PWD}/data:/data" -v "${PWD}/outputs:/outputs" grupo8-pipeline --input /data/DataCoSupplyChainDataset.csv --output /outputs
 ```
 
----
+No PowerShell, use `-v "${PWD}/data:/data"` e `-v "${PWD}/outputs:/outputs"` igualmente.
 
-## Arquivos Gerados
+## Saída
 
-Após a execução de `python src/script.py`, é gerado **1 único CSV final por dataset** em `data/processed/` (em codificação **UTF-8**), já com todas as limpezas, padronizações e normalizações aplicadas diretamente nas colunas:
+- `resumo_por_regiao.csv`: volume, vendas, atraso médio e percentual com risco por região.
+- `risco_por_regiao.png`: comparação do percentual de risco por região.
+- `atraso_por_status.png`: atraso médio por status de entrega.
 
-1. `data/processed/dataco_supply_chain_processed.csv` — Dataset principal padronizado e normalizado (`180.519` linhas × `42` colunas).
-2. `data/processed/tokenized_access_logs_processed.csv` — Dataset de logs de acesso sem duplicatas, padronizado e normalizado (`466.728` linhas × `8` colunas).
+## Checklist externo da atividade
+
+A conclusão de EADs, instalação/teste de Node.js/npm, atualização do board, publicação da imagem e execução em máquina de outro grupo precisam ser realizados e comprovados pelos integrantes. Anexar também a captura da execução Docker na entrega. Cada integrante deve abrir/revisar PRs conforme solicitado pela atividade.
