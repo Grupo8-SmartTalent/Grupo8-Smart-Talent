@@ -51,3 +51,11 @@ Product Price,:  Product Price
 Product Status,":  Status of the product stock :If it is 1 not available , 0 the product is available "
 Shipping date (DateOrders)   ,:  Exact date and time of shipment
 Shipping Mode,":  The following shipping modes are presented : Standard Class , First Class , Second Class , Same Day"
+Package Length (cm),:  Estimated length of the product package in centimeters (largest side)
+Package Width (cm),:  Estimated width of the product package in centimeters (intermediate side)
+Package Height (cm),:  Estimated height of the product package in centimeters (smallest side)
+Package Volume (cm3),:  Package volume in cubic centimeters (length x width x height)
+Product Net Weight (kg),:  Estimated net weight of the product without packaging in kilograms
+Package Gross Weight (kg),:  Estimated gross weight of the packed product (product + packaging) in kilograms
+Order Item Gross Weight (kg),:  Total gross weight of the order item (Package Gross Weight x Order Item Quantity) in kilograms
+Order Item Volume (cm3),:  Total volume of the order item (Package Volume x Order Item Quantity) in cubic centimeters assuming one package per unit

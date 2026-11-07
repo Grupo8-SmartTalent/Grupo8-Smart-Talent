@@ -11,6 +11,7 @@ Grupo8-Smart-Talent/
 ├── data/
 │   ├── DataCoSupplyChainDataset.csv       # Dataset principal de pedidos e logística (180.519 linhas)
 │   ├── DescriptionDataCoSupplyChain.csv   # Dicionário de dados oficial das colunas
+│   ├── product_dimensions.csv             # Dimensões e pesos estimados da embalagem de cada produto (118 produtos)
 │   ├── tokenized_access_logs.csv          # Dataset de logs de acesso tokenizados (469.977 linhas)
 │   └── processed/                         # Datasets limpos e normalizados (gerados por src/script.py)
 ├── src/
@@ -55,6 +56,8 @@ Caso queira executar a padronização e normalização completa dos datasets:
 ```bash
 python src/script.py
 ```
+
+As dimensões e os pesos estimados das embalagens já estão incluídos no dataset principal.
 
 ---
 
