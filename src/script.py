@@ -80,6 +80,14 @@ DATACO_COLUMN_RENAME = {
     "Product Price": "product_price",
     "shipping date (DateOrders)": "shipping_date",
     "Shipping Mode": "shipping_mode",
+    "Package Length (cm)": "package_length_cm",
+    "Package Width (cm)": "package_width_cm",
+    "Package Height (cm)": "package_height_cm",
+    "Package Volume (cm3)": "package_volume_cm3",
+    "Product Net Weight (kg)": "product_net_weight_kg",
+    "Package Gross Weight (kg)": "package_gross_weight_kg",
+    "Order Item Gross Weight (kg)": "order_item_gross_weight_kg",
+    "Order Item Volume (cm3)": "order_item_volume_cm3",
 }
 
 LOGS_COLUMN_RENAME = {
