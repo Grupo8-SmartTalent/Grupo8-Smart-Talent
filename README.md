@@ -1,73 +1,101 @@
-# Grupo 8 — Smart Talent (DataCo Supply Chain & Access Logs)
+# Grupo 8 — Smart Talent
 
-Projeto de preparação, padronização e normalização dos datasets de cadeia de suprimentos (**DataCo Smart Supply Chain**) e logs de acesso tokenizados (**Tokenized Access Logs**).
+Projeto de análise exploratória, pré-processamento e modelagem do dataset **DataCo Smart Supply Chain** e **Tokenized Access Logs**, incluindo pipeline analítico reproduzível e conteinerização via Docker (Atividade Remoto 02).
 
 ---
 
-## Estrutura do Projeto
+## Estrutura do Repositório
 
 ```text
 Grupo8-Smart-Talent/
 ├── data/
-│   ├── DataCoSupplyChainDataset.csv       # Dataset bruto de pedidos e logística (180.519 linhas x 53 colunas)
+│   ├── DataCoSupplyChainDataset.csv       # Dataset principal de pedidos e logística (180.519 linhas)
 │   ├── DescriptionDataCoSupplyChain.csv   # Dicionário de dados oficial das colunas
-│   ├── tokenized_access_logs.csv          # Dataset bruto de logs de acesso (469.977 linhas x 8 colunas)
-│   └── processed/                         # Datasets finais padronizados e normalizados (1 CSV por base, UTF-8)
+│   ├── tokenized_access_logs.csv          # Dataset de logs de acesso tokenizados (469.977 linhas)
+│   └── processed/                         # Datasets limpos e normalizados (gerados por src/script.py)
 ├── src/
-│   └── script.py                          # Pipeline de limpeza, padronização e normalização in-place
-├── requirements.txt                       # Dependências do projeto (codificado em UTF-8)
+│   ├── pipeline.py                        # Pipeline analítico com geração de resumo e gráficos (Remoto 02)
+│   └── script.py                          # Pipeline de padronização, limpeza e normalização dos dados
+├── outputs/                               # Saídas analíticas do pipeline (tabelas e gráficos)
+├── Dockerfile                             # Configuração da imagem Docker (python:3.11-slim)
+├── .dockerignore                          # Arquivos e pastas excluídos da build Docker
+├── .gitignore                             # Arquivos e pastas ignorados pelo Git
+├── requirements.txt                       # Dependências do projeto
 └── README.md                              # Documentação e instruções de execução
 ```
 
 ---
 
-## Pré-requisitos
+## 1. Execução Local
 
-- **Python 3.11+** (ambiente configurado com Python 3.13)
-- **pip** atualizado
+### Pré-requisitos
+- Python 3.11+
+- Gerenciador de pacotes `pip`
 
----
+### Passo a passo
 
-## Como Configurar e Rodar o Projeto
+```bash
+# 1. Criar e ativar o ambiente virtual
+python -m venv .venv
 
-### 1. Ativar o Ambiente Virtual (`venv`)
+# Linux / macOS
+source .venv/bin/activate
 
-Caso esteja na pasta raiz `Grupo8-Smart-Talent` no **Windows (PowerShell)**:
+# Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Ou via **Prompt de Comando (CMD)**:
-
-```cmd
-.\venv\Scripts\activate.bat
-```
-
-*(Caso ainda não possua um ambiente virtual criado, crie-o com `python -m venv venv` e ative-o com o comando acima).*
-
-### 2. Instalar as Dependências
-
-Entre no diretório do repositório e instale os pacotes listados no `requirements.txt`:
-
-```powershell
-cd Grupo8-Smart-Talent
+# 2. Instalar as dependências
 pip install -r requirements.txt
+
+# 3. Executar o pipeline analítico
+python src/pipeline.py --input data/DataCoSupplyChainDataset.csv --output outputs
 ```
 
-### 3. Executar o Script de Padronização e Normalização
-
-Execute o script principal:
-
-```powershell
+Caso queira executar a padronização e normalização completa dos datasets:
+```bash
 python src/script.py
 ```
 
 ---
 
-## Arquivos Gerados
+## 2. Execução via Docker (Atividade Remoto 02)
 
-Após a execução de `python src/script.py`, é gerado **1 único CSV final por dataset** em `data/processed/` (em codificação **UTF-8**), já com todas as limpezas, padronizações e normalizações aplicadas diretamente nas colunas:
+O pipeline foi conteinerizado com imagem base `python:3.11-slim`. Monte os diretórios contendo os dados de entrada e a pasta de saída desejada:
 
-1. `data/processed/dataco_supply_chain_processed.csv` — Dataset principal padronizado e normalizado (`180.519` linhas × `42` colunas).
-2. `data/processed/tokenized_access_logs_processed.csv` — Dataset de logs de acesso sem duplicatas, padronizado e normalizado (`466.728` linhas × `8` colunas).
+```bash
+# Construir a imagem Docker
+docker build -t grupo8-pipeline .
+
+# Executar o container montando volumes locais
+# Linux / macOS (Bash)
+docker run --rm -v "${PWD}/data:/data" -v "${PWD}/outputs:/outputs" grupo8-pipeline --input /data/DataCoSupplyChainDataset.csv --output /outputs
+
+# Windows (PowerShell)
+docker run --rm -v "${PWD}/data:/data" -v "${PWD}/outputs:/outputs" grupo8-pipeline --input /data/DataCoSupplyChainDataset.csv --output /outputs
+```
+
+---
+
+## 3. Decisões de Limpeza no Pipeline Analítico
+
+1. **Padronização de cabeçalhos:** Nomes de colunas convertidos para minúsculas e sem espaços nas pontas (`str.strip().str.lower()`), garantindo acesso uniforme.
+2. **Conversão de tipos e tratamento de nulos:** Colunas essenciais (`sales`, `late_delivery_risk`, dias de envio) convertidas numericamente; registros incompletos são descartados para não distorcer médias.
+3. **Desduplicação:** Remoção de registros 100% duplicados.
+4. **Filtro de vendas:** Exclusão de vendas negativas (`sales >= 0`) para refletir apenas faturamento comercial válido.
+5. **Cálculo de atraso:** `atraso_dias` definido como a diferença entre dias reais e programados (`Days for shipping (real) - Days for shipment (scheduled)`), com piso em zero (`clip(lower=0)`), de modo que entregas adiantadas não contem como atraso.
+
+---
+
+## 4. Saídas Geradas pelo Pipeline
+
+Ao rodar `src/pipeline.py` (localmente ou no Docker), os seguintes artefatos são salvos no diretório `--output` (padrão `outputs/`):
+
+- `resumo_por_regiao.csv`: Tabela agregada com volume de pedidos, faturamento de vendas, atraso médio em dias e percentual de risco de atraso por região geográfica (`order region`).
+- `risco_por_regiao.png`: Gráfico de barras comparando o percentual de pedidos com risco de entrega por região.
+- `atraso_por_status.png`: Gráfico de barras ilustrando o atraso médio em dias de acordo com o status da entrega (`delivery status`).
+
+---
+
+## 5. Checklist Externo da Atividade
+
+A conclusão de EADs, instalação/teste de Node.js/npm, atualização do board, publicação da imagem e execução em máquina de outro grupo precisam ser realizados e comprovados pelos integrantes. Anexar também a captura da execução Docker na entrega. Cada integrante deve abrir/revisar PRs conforme solicitado pela atividade.
