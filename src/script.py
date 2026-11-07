@@ -109,7 +109,7 @@ MINMAX_COLUMNS = [
     "order_item_discount_rate",     # Taxa percentual limitada [0, 0.25]
 ]
 
-# Variáveis financeiras contínuas (com valores negativos e outliers) -> Padronização Z-Score (média=0, std=1)
+# Variáveis contínuas financeiras e físicas (peso/volume/dimensões) -> Padronização Z-Score (média=0, std=1)
 ZSCORE_COLUMNS = [
     "benefit_per_order",
     "order_item_discount",
@@ -117,6 +117,14 @@ ZSCORE_COLUMNS = [
     "sales",
     "order_item_total",
     "product_price",
+    "package_length_cm",
+    "package_width_cm",
+    "package_height_cm",
+    "package_volume_cm3",
+    "product_net_weight_kg",
+    "package_gross_weight_kg",
+    "order_item_gross_weight_kg",
+    "order_item_volume_cm3",
 ]
 
 
@@ -214,15 +222,17 @@ def process_dataco(input_path: Path) -> pd.DataFrame:
 
     # 11. Normalização Min-Max [0, 1] in-place nas variáveis limitadas/discretas
     for col in MINMAX_COLUMNS:
-        col_min = df[col].min()
-        col_max = df[col].max()
-        df[col] = ((df[col] - col_min) / (col_max - col_min)).round(6)
+        if col in df.columns:
+            col_min = df[col].min()
+            col_max = df[col].max()
+            df[col] = ((df[col] - col_min) / (col_max - col_min)).round(6)
 
-    # 12. Padronização Z-Score (média=0, desvio padrão=1) in-place nas variáveis financeiras contínuas
+    # 12. Padronização Z-Score (média=0, desvio padrão=1) in-place nas variáveis contínuas financeiras e físicas
     for col in ZSCORE_COLUMNS:
-        col_mean = df[col].mean()
-        col_std = df[col].std()
-        df[col] = ((df[col] - col_mean) / col_std).round(6)
+        if col in df.columns:
+            col_mean = df[col].mean()
+            col_std = df[col].std()
+            df[col] = ((df[col] - col_mean) / col_std).round(6)
 
     print(f"      Formato final processado: {df.shape[0]:,} linhas x {df.shape[1]} colunas")
     return df
