@@ -1,9 +1,30 @@
+# Byte-compiled / optimized
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Ambientes virtuais
 .venv/
 venv/
+env/
+ENV/
 .env
+
+# Banco de dados e caches locais
 *.db
 *.sqlite
+*.log
+.cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+tempCodeRunnerFile.py
+
+# Saídas do pipeline e dados processados
 outputs/
 data/processed/

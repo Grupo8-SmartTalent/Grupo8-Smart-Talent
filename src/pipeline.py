@@ -41,5 +41,5 @@ def main():
     ax.set(title="Entregas marcadas como atrasadas acumulam mais dias de atraso",ylabel="Atraso médio (dias)",xlabel="Status de entrega"); fig.tight_layout(); fig.savefig(out/"atraso_por_status.png",dpi=150); plt.close(fig)
     print(f"Linhas analisadas: {len(df):,}")
     print(resumo.to_string(index=False))
-    print(f"Saídas gravadas em: {out.resolve()}")
+    print(f"Saidas gravadas em: {out.resolve()}")
 if __name__=="__main__": main()
