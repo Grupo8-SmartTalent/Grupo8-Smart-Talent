@@ -1,2 +1,6 @@
-pandas>=2.2.0
-matplotlib>=3.9.0
+pandas==2.2.3
+matplotlib==3.9.4
+scikit-learn==1.5.2
+joblib==1.4.2
+fastapi==0.115.4
+uvicorn[standard]==0.32.0
