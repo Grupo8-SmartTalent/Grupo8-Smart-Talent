@@ -102,3 +102,22 @@ Ao rodar `src/pipeline.py` (localmente ou no Docker), os seguintes artefatos sã
 ## 5. Checklist Externo da Atividade
 
 A conclusão de EADs, instalação/teste de Node.js/npm, atualização do board, publicação da imagem e execução em máquina de outro grupo precisam ser realizados e comprovados pelos integrantes. Anexar também a captura da execução Docker na entrega. Cada integrante deve abrir/revisar PRs conforme solicitado pela atividade.
+
+
+## Baseline de risco de atraso (Remoto 03)
+
+O CSV DataCo não contém falhas de máquinas; este projeto usa como alvo `Late_delivery_risk` (1 = risco de atraso), alinhado à análise logística do grupo. O treino usa split temporal: 80% mais antigos para treino e 20% mais recentes para teste, evitando misturar períodos. Não use campos conhecidos somente após a entrega.
+
+Instale dependências com `pip install -r requirements.txt` e rode `python src/train_baseline.py`. O script salva `modelo_atraso.joblib` e `outputs/metricas_baseline.json`. Precisão mede, entre os pedidos previstos como risco, a fração que realmente tem risco; recall mede a fração dos pedidos com risco que o modelo identifica. Os valores devem ser preenchidos a partir do JSON após executar o treino; não foram inventados.
+
+API: após treinar, rode `uvicorn src.api:app --reload`. Consulte `/health` e envie POST a `/predict` com as features documentadas no schema. A tela React do Sábado 3 e o ambiente local precisam ser conectados/testados pelo grupo.
+
+### Roteiro preliminar (5 minutos)
+
+- **0:00–0:30 — Problema:** atrasos logísticos afetam experiência e rentabilidade; pergunta: como identificar pedidos com risco antes de concluir a promessa operacional?
+- **0:30–1:15 — Arquitetura:** CSV DataCo → preparação e split temporal → Random Forest baseline → API FastAPI → dashboard.
+- **1:15–3:15 — Demonstração:** mostrar dashboard por modalidade/produto/região, previsão de risco via API e resposta consumível pela tela.
+- **3:15–4:15 — Resultado e limites:** apresentar precisão e recall do JSON de teste; explicar falso positivo/falso negativo. É risco histórico, não causalidade nem garantia individual.
+- **4:15–5:00 — Processo/aprendizado:** ciclo dados–modelo–API–interface, divisão de tarefas e próximos passos: validar com operação real e monitorar drift.
+
+Cada integrante deve falar. Rascunho sujeito à revisão do mentor; EAD, integração React e execução no ambiente da equipe precisam ser confirmados pelo grupo.
