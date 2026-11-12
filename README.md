@@ -106,18 +106,64 @@ A conclusão de EADs, instalação/teste de Node.js/npm, atualização do board,
 
 ## Baseline de risco de atraso (Remoto 03)
 
-O CSV DataCo não contém falhas de máquinas; este projeto usa como alvo `Late_delivery_risk` (1 = risco de atraso), alinhado à análise logística do grupo. O treino usa split temporal: 80% mais antigos para treino e 20% mais recentes para teste, evitando misturar períodos. Não use campos conhecidos somente após a entrega.
+O CSV DataCo não contém falhas de máquinas; por isso, o baseline prevê `Late_delivery_risk` (1 = risco de atraso), alinhado ao problema logístico do grupo. Foi treinada uma Random Forest com atributos disponíveis no pedido (modalidade de envio, região, país, categoria, produto, prazo prometido, quantidade, preço, mês e dia da semana). O split é cronológico e agrupado por `Order Id`: os 80% de pedidos mais antigos ficam no treino e os 20% mais recentes no teste, sem separar itens de um mesmo pedido entre os conjuntos.
 
-Instale dependências com `pip install -r requirements.txt` e rode `python src/train_baseline.py`. O script salva `modelo_atraso.joblib` e `outputs/metricas_baseline.json`. Precisão mede, entre os pedidos previstos como risco, a fração que realmente tem risco; recall mede a fração dos pedidos com risco que o modelo identifica. Os valores devem ser preenchidos a partir do JSON após executar o treino; não foram inventados.
+### Métricas no conjunto de teste
 
-API: após treinar, rode `uvicorn src.api:app --reload`. Consulte `/health` e envie POST a `/predict` com as features documentadas no schema. A tela React do Sábado 3 e o ambiente local precisam ser conectados/testados pelo grupo.
+| Métrica | Resultado | Interpretação |
+|---|---:|---|
+| Acurácia | 69,25% | Percentual de previsões corretas entre todos os pedidos de teste. |
+| Precisão (classe 1) | 83,22% | Entre os pedidos sinalizados com risco, cerca de 83 em cada 100 tinham risco 1 no dataset. |
+| Recall (classe 1) | 55,01% | O modelo identificou cerca de 55 em cada 100 pedidos que tinham risco 1. |
 
-### Roteiro preliminar (5 minutos)
+Avaliação feita em 22.778 linhas de teste (treino: 157.741 linhas). Para a operação, a precisão indica quanto confiar nos alertas emitidos; o recall indica quantos pedidos de risco o alerta consegue encontrar. O recall moderado significa que muitos casos de risco ainda passam sem alerta. Essas métricas medem associação preditiva no histórico, não causalidade, economia financeira nem garantia individual de atraso.
 
-- **0:00–0:30 — Problema:** atrasos logísticos afetam experiência e rentabilidade; pergunta: como identificar pedidos com risco antes de concluir a promessa operacional?
-- **0:30–1:15 — Arquitetura:** CSV DataCo → preparação e split temporal → Random Forest baseline → API FastAPI → dashboard.
-- **1:15–3:15 — Demonstração:** mostrar dashboard por modalidade/produto/região, previsão de risco via API e resposta consumível pela tela.
-- **3:15–4:15 — Resultado e limites:** apresentar precisão e recall do JSON de teste; explicar falso positivo/falso negativo. É risco histórico, não causalidade nem garantia individual.
-- **4:15–5:00 — Processo/aprendizado:** ciclo dados–modelo–API–interface, divisão de tarefas e próximos passos: validar com operação real e monitorar drift.
+Para reproduzir o treinamento e salvar o modelo compactado abaixo do limite de 100 MB do GitHub:
 
-Cada integrante deve falar. Rascunho sujeito à revisão do mentor; EAD, integração React e execução no ambiente da equipe precisam ser confirmados pelo grupo.
+```powershell
+python src/train_baseline.py
+```
+
+O script salva `modelo_atraso.joblib` e `outputs/metricas_baseline.json`. O arquivo do modelo é persistido com compressão zlib sem reduzir componentes ou precisão do modelo.
+
+### API e integração
+
+Com o modelo treinado, inicie a API:
+
+```powershell
+uvicorn src.api:app --host 127.0.0.1 --port 8000
+```
+
+Verifique `http://127.0.0.1:8000/health` e envie POST JSON para `/predict`. A API responde com `late_delivery_risk` (0 ou 1), `probability` e uma interpretação. Para integrar com o React, a tela deve enviar os campos do schema `OrderFeatures` em `src/api.py`; a confirmação do consumo pela tela depende do projeto React do Sábado 3, que não está neste checkout.
+
+### Roteiro do pitch (7 minutos + 3 minutos de perguntas)
+
+Estrutura conforme o deck de orientação: **Entenda (2 min) → Construa (3 min) → Comprove (2 min)**. Cinco integrantes, cada um fala uma única vez. A lógica do pitch é problema → solução → valor → pedido; em cada etapa, mostrar o dado e a decisão que ele apoia.
+
+| Tempo | Bloco e fala | Roteiro e apoio visual |
+|---|---|---|
+| 0:00–1:15 | **ENTENDA — Integrante 1: contexto e problema** | Abrir com a pergunta de negócio: “Onde os atrasos se concentram e como isso deve orientar decisões logísticas?” Contextualizar quem é afetado e a consequência para cliente e empresa. Exibir a evidência principal do CSV/dashboard e declarar a meta do projeto: tornar os padrões de atraso e risco mais visíveis para priorizar investigação. |
+| 1:15–2:00 | **ENTENDA — Integrante 2: evidência e decisão** | Mostrar os recortes do dataset que sustentam o problema (produto, modalidade, região/rota), explicando população e medida. Distinguir associação de causalidade e mencionar limitações dos dados. Concluir qual decisão gerencial a análise ajuda a avaliar, sem afirmar que o CSV prova uma causa. |
+| 2:00–3:30 | **CONSTRUA — Integrante 3: método e arquitetura** | Explicar o dataset e seu preparo; mostrar o caminho reproduzível no repositório (pipeline e Docker, quando aplicável), split temporal agrupado por pedido, baseline Random Forest e métricas. Diagrama do fluxo: CSV → Pandas/preparo → modelo → API → dashboard. Responder “como outra pessoa roda do zero?” com os comandos documentados. |
+| 3:30–5:00 | **CONSTRUA — Integrante 4: o que foi criado e demonstração** | Demonstrar o dashboard e uma previsão pela API: dado de entrada, resposta e decisão que um gestor poderia investigar. Dizer com precisão o que foi testado. A API foi testada por HTTP; não apresentar consumo pelo React como concluído sem validação independente. Se a demo não subir em 30 segundos, usar vídeo/capturas de contingência. |
+| 5:00–7:00 | **COMPROVE — Integrante 5: resultado, impacto, aprendizado e pedido** | Apresentar honestamente as métricas no teste cronológico: precisão 83,22%, recall 55,01% e acurácia 69,25% (22.778 linhas). Explicar o que mudou com a solução: visibilidade e priorização analítica, sem atribuir redução financeira ainda não medida. Limites: risco histórico não é causalidade nem garantia; recall deixa casos sem alerta. Fechar com aprendizados e pedido à banca: apoio para validar com dados operacionais recentes e medir impacto em um piloto. |
+
+**Perguntas da banca — 3 minutos.** Preparar respostas para: como rodar do zero; o que o gestor faz com o resultado; o que mudariam com mais um mês; onde estimaram errado; e qual é a limitação mais importante. Se a demonstração falhar, usar vídeo ou capturas. O deck também recomenda mostrar dado entrando e decisão saindo.
+
+A divisão acima dá uma fala a cada um dos cinco integrantes. A revisão do mentor e a confirmação de participação precisam ocorrer fora deste checkout.
+
+### Pendências externas ao checkout
+
+A conclusão do EAD de Machine Learning e GenAI, a revisão do deck pelo mentor, a integração efetiva com o projeto React e a confirmação de fala de todos os integrantes precisam ser realizadas/verificadas pelo grupo. Este texto e o modelo ainda não foram commitados.
+## API e modelo no Docker para integração com React
+
+A imagem inclui somente a API FastAPI, suas dependências e o modelo treinado. O avaliador pode usar a própria tela React para chamar a API; a imagem não contém a tela demonstrativa local.
+
+```powershell
+docker build -t smart-talent-api .
+docker run --rm -p 8000:8000 -e "ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173" smart-talent-api
+```
+
+API: `http://localhost:8000`; documentação: `http://localhost:8000/docs`; saúde: `http://localhost:8000/health`. Configure `ALLOWED_ORIGINS` com a origem exata onde o frontend React estiver servido (esquema, host e porta). Para produção, informe o domínio real da tela. O React chama `POST http://localhost:8000/predict` enviando o JSON definido no schema `OrderFeatures` de `src/api.py`.
+
+A imagem não inclui os CSVs, pois não são necessários para servir o modelo já treinado. Para retreinar, rode `python src/train_baseline.py` no checkout com os dados.

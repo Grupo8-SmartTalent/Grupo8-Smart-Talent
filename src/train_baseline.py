@@ -32,8 +32,12 @@ def main():
     df["order_month"]=df["order date (DateOrders)"].dt.month
     df["order_weekday"]=df["order date (DateOrders)"].dt.weekday
     df=df.sort_values("order date (DateOrders)")
-    cut=int(len(df)*0.8)
-    train,test=df.iloc[:cut],df.iloc[cut:]
+    # Keep every line item from one order on the same side of the split.
+    order_dates=df.groupby("Order Id")["order date (DateOrders)"].min().sort_values()
+    cut=int(len(order_dates)*0.8)
+    train_ids=set(order_dates.index[:cut])
+    train=df[df["Order Id"].isin(train_ids)]
+    test=df[~df["Order Id"].isin(train_ids)]
     if train["Late_delivery_risk"].nunique()<2 or test["Late_delivery_risk"].nunique()<2: raise ValueError("Split cronológico sem ambas as classes; verifique o período/dados.")
     prep=ColumnTransformer([("cat",Pipeline([("impute",SimpleImputer(strategy="most_frequent")),("onehot",OneHotEncoder(handle_unknown="ignore"))]),CATEGORICAL),("num",Pipeline([("impute",SimpleImputer(strategy="median"))]),NUMERIC)])
     model=Pipeline([("prep",prep),("classifier",RandomForestClassifier(n_estimators=150,min_samples_leaf=3,class_weight="balanced",random_state=42,n_jobs=-1))])

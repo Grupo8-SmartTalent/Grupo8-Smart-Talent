@@ -28,3 +28,6 @@ tempCodeRunnerFile.py
 # Saídas do pipeline e dados processados
 outputs/
 data/processed/
+
+# Dependências da tela de demonstração local
+web/node_modules/
