@@ -1,89 +1,568 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Smart Talent | Inteligência Logística</title>
-<link rel="stylesheet" href="styles.css?v=bi-priority-cards-1"></head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Talent | Torre de Decisão Logística</title>
+  <link rel="stylesheet" href="styles.css?v=ux-exec-3">
+</head>
 <body>
-<div class="phone">
+<div class="app-shell">
   <header class="top">
-    <div class="brand"><span class="brand-mark">JD</span><div><b>SMART TALENT</b><small>INTELIGÊNCIA LOGÍSTICA</small></div><button class="bell" aria-label="Notificações">♧</button></div>
+    <div class="header-top">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">JD</span>
+        <div>
+          <b>SMART TALENT</b>
+          <small>TORRE DE DECISÃO LOGÍSTICA</small>
+        </div>
+      </div>
+      <span class="status-pill" id="model-status-pill" aria-live="polite">Base CSV Ativa</span>
+    </div>
     <nav class="nav" aria-label="Navegação principal">
-      <button class="nav-btn active" data-page="overview">Visão geral</button><button class="nav-btn" data-page="bi">BI executivo</button><button class="nav-btn" data-page="routes">Rotas e atrasos</button>
-      <button class="nav-btn" data-page="scenarios">Cenários de CDs</button><button class="nav-btn" data-page="assumptions">Premissas</button>
+      <button type="button" class="nav-btn active" data-page="overview" aria-current="page">1. Resumo</button>
+      <button type="button" class="nav-btn" data-page="bi">2. Onde Perdemos (BI)</button>
+      <button type="button" class="nav-btn" data-page="routes">3. Gargalos por Rota</button>
+      <button type="button" class="nav-btn" data-page="predict">4. Testar Pedido (IA)</button>
+      <button type="button" class="nav-btn" data-page="scenarios">5. Simular CD Europa</button>
+      <button type="button" class="nav-btn" data-page="assumptions">6. Premissas e Limites</button>
     </nav>
   </header>
+
   <main>
+    <div id="global-error" class="error-banner" role="alert" hidden>
+      <span id="global-error-text"></span>
+      <button type="button" id="global-error-close" class="error-close" aria-label="Fechar aviso">✕</button>
+    </div>
+
     <section class="page active" id="overview">
-      <div class="intro card"><div><div class="eyebrow">PAINEL DE DECISÃO</div><h1>Rede logística</h1><p>Demanda, atrasos e cenários de atendimento</p></div><div class="select-wrap"><label for="region-filter">Região</label><select id="region-filter"><option value="Todas">Todas</option><option>Europa</option><option>América do Norte</option><option>Ásia</option></select></div></div>
-      <div class="section-title"><div><span class="eyebrow">BASE HISTÓRICA</span><h2>Resumo da operação</h2></div><span class="tag observed">Observado no CSV</span></div>
-      <div class="metrics">
-        <article class="metric"><span>PEDIDOS ANALISADOS</span><strong>180.519</strong><small>registros no dataset</small></article>
-        <article class="metric"><span>PEDIDOS COM RISCO</span><strong>54,8%</strong><small>alvo histórico Late_delivery_risk</small></article>
-        <article class="metric"><span>PRECISÃO DO BASELINE</span><strong>83,2%</strong><small>classe de risco · teste temporal</small></article>
-        <article class="metric"><span>RECALL DO BASELINE</span><strong>55,0%</strong><small>casos de risco identificados</small></article>
+      <div class="intro card">
+        <div>
+          <span class="eyebrow">PAINEL EXECUTIVO · JOHN DEERE</span>
+          <h1>Torre de Decisão e Triagem Logística</h1>
+          <p>Diagnóstico histórico de atrasos e margem negativa, alerta preditivo por IA e simulação de rede.</p>
+        </div>
+        <div class="select-wrap">
+          <label for="region-filter">Filtrar Base por Macro-Região</label>
+          <select id="region-filter">
+            <option value="Todas">Todas as Regiões</option>
+            <option value="América do Norte">América do Norte</option>
+            <option value="Europa">Europa</option>
+            <option value="Ásia">Ásia</option>
+            <option value="América do Sul">América do Sul</option>
+            <option value="Oceania">Oceania</option>
+            <option value="África">África</option>
+          </select>
+        </div>
       </div>
-      <div class="card demand"><div class="card-head"><div><span class="eyebrow">ONDE ESTÁ A DEMANDA</span><h2>Pedidos por região</h2></div><button class="more" data-goto="routes">Ver rotas ↗</button></div>
-        <div class="region-row"><span>América do Norte</span><div class="bar"><i style="width:76%"></i></div><b>Maior volume</b></div>
-        <div class="region-row"><span>Europa</span><div class="bar"><i style="width:48%"></i></div><b>Demanda relevante</b></div>
-        <div class="region-row"><span>Ásia</span><div class="bar"><i style="width:31%"></i></div><b>Demanda menor</b></div>
-        <p class="note">Visualização conceitual: substituir as barras pelos agregados reproduzíveis do CSV antes da apresentação.</p>
+
+      <section class="story-block" aria-labelledby="story-title">
+        <div class="section-title">
+          <div>
+            <span class="eyebrow">O QUE ESTE SISTEMA RESOLVE</span>
+            <h2 id="story-title">Do Diagnóstico à Decisão em 3 Passos</h2>
+          </div>
+          <span class="tag observed">Base Histórica: 180.519 Linhas</span>
+        </div>
+
+        <div class="story-grid">
+          <article class="card story-card story-problem">
+            <span class="story-step step-problem">1 · O PROBLEMA</span>
+            <h3>Onde a Operação Perde Margem</h3>
+            <p><strong>54,8%</strong> das entregas têm risco de atraso e somam <strong>US$ 2,15M</strong> em margem negativa associada — concentrados no frete <strong>Primeira Classe (95,3% de risco)</strong>, em <strong>8 produtos críticos (84,6% das perdas)</strong> e nas rotas para a Europa.</p>
+            <button type="button" class="story-btn" data-goto="bi">Ver Onde Perdemos <span aria-hidden="true">↗</span></button>
+          </article>
+
+          <article class="card story-card story-solution">
+            <span class="story-step step-solution">2 · A SOLUÇÃO</span>
+            <h3>Torre de Decisão e Triagem por IA</h3>
+            <p>O sistema <strong>alerta antes do envio</strong> se o pedido vai atrasar com o modelo de IA, orienta a revisão da promessa <strong>Primeira Classe</strong> e permite simular a abertura de um <strong>CD próprio na Europa</strong> com operadores logísticos (3PL) nos EUA e China.</p>
+            <button type="button" class="story-btn story-btn-primary" data-goto="predict">Testar um Pedido com IA <span aria-hidden="true">↗</span></button>
+          </article>
+
+          <article class="card story-card story-action">
+            <span class="story-step step-action">3 · COMO USAR</span>
+            <h3>Simulação de Rede e Custos</h3>
+            <p>Navegue pelas abas na ordem da apresentação: inspecione perdas e rotas críticas, faça triagem de pedidos em 1 clique com o modelo preditivo e teste premissas editáveis para o <strong>CD Europeu</strong>.</p>
+            <button type="button" class="story-btn" data-goto="scenarios">Simular Novo CD na Europa <span aria-hidden="true">↗</span></button>
+          </article>
+        </div>
+      </section>
+
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">BASE HISTÓRICA</span>
+          <h2>Resumo da Operação</h2>
+        </div>
+        <span class="tag observed">Observado no CSV</span>
       </div>
-      <div class="card proposal"><span class="eyebrow">PROPOSTA EM AVALIAÇÃO</span><h2>CD próprio na Europa</h2><p>Atendimento europeu local, com operação terceirizada na América do Norte e na China.</p><button class="primary" data-goto="scenarios">Explorar cenários</button></div>
-      <p class="disclaimer">O histórico mostra associações. A mudança de rede é uma proposta; seus efeitos precisam ser simulados com custos e premissas reais.</p>
+
+      <div class="metrics" id="overview-metrics">
+        <article class="metric">
+          <span>ITENS DE PEDIDO (LINHAS)</span>
+          <strong id="ov-rows">180.519</strong>
+          <small id="ov-unique-orders">65.752 Pedidos Únicos no Recorte</small>
+        </article>
+        <article class="metric">
+          <span>LINHAS COM RISCO DE ATRASO</span>
+          <strong id="ov-risk">54,8%</strong>
+          <small id="ov-delay-note">Indicador Histórico de Risco</small>
+        </article>
+        <article class="metric metric-fixed">
+          <span>PRECISÃO DO MODELO (GLOBAL)</span>
+          <strong>83,2%</strong>
+          <small>Modelo Fixo · Teste Temporal por Pedido</small>
+        </article>
+        <article class="metric metric-fixed">
+          <span>RECALL DO MODELO (GLOBAL)</span>
+          <strong>55,0%</strong>
+          <small>Casos de Risco Capturados · Modelo Fixo</small>
+        </article>
+      </div>
+
+      <div class="card demand">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">ONDE ESTÁ A DEMANDA</span>
+            <h2>Linhas de Pedido por Sub-Região</h2>
+          </div>
+          <button type="button" class="more" data-goto="routes">Ver Gargalos por Rota <span aria-hidden="true">↗</span></button>
+        </div>
+        <div id="overview-regions-list" class="regions-list" aria-live="polite">
+          <div class="region-row"><span>Carregando Distribuição…</span><div class="bar"><i style="width:0%"></i></div><b>—</b></div>
+        </div>
+        <p class="note">Distribuição Observada no CSV por Sub-Região de Destino (Linhas e Taxa de Risco Histórica).</p>
+      </div>
+
+      <div class="card proposal">
+        <div>
+          <span class="eyebrow">PROPOSTA EM AVALIAÇÃO</span>
+          <h2>CD Próprio na Europa + Parceiros 3PL</h2>
+          <p>Atendimento europeu local para reduzir o tempo de entrega e o risco nas rotas críticas, combinado com operação terceirizada por parceiros na América do Norte e na China.</p>
+        </div>
+        <div class="proposal-actions">
+          <button type="button" class="primary" data-goto="scenarios">5. Simular CD Europa</button>
+          <button type="button" class="secondary-outline" data-goto="predict">4. Testar Pedido (IA)</button>
+        </div>
+      </div>
+
+      <p class="disclaimer">O histórico mostra associações entre prazo, modalidade, região e margem. A mudança de rede é uma hipótese de negócio; seus efeitos dependem de custos reais de armazenagem, frete e nível de serviço.</p>
     </section>
 
     <section class="page" id="bi">
-      <div class="page-heading"><span class="eyebrow">INTELIGÊNCIA LOGÍSTICA</span><h1>Desempenho logístico</h1><p>Atrasos e resultado financeiro por modalidade, região e produto.</p></div>
-      <div class="section-title"><div><span class="eyebrow">OPERAÇÃO ATUAL</span><h2>Indicadores principais</h2></div><span class="tag observed">180.519 linhas · 65.752 pedidos</span></div>
+      <div class="page-heading">
+        <span class="eyebrow">2. ONDE PERDEMOS (BI EXECUTIVO)</span>
+        <h1>Desempenho Logístico e Impacto Financeiro</h1>
+        <p>Atrasos e margem negativa observada por modalidade de frete, região de destino e produto crítico.</p>
+      </div>
+
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">OPERAÇÃO ATUAL</span>
+          <h2>Indicadores Principais</h2>
+        </div>
+        <span class="tag observed" id="bi-scope-tag">Observado no CSV · 180.519 Linhas</span>
+      </div>
+
       <div class="metrics bi-kpis">
-        <article class="metric"><span>LINHAS ANALISADAS</span><strong id="bi-lines">180.519</strong><small id="bi-lines-note">65.752 pedidos únicos</small></article>
-        <article class="metric"><span>LINHAS COM RISCO</span><strong id="bi-risk">54,8%</strong><small id="bi-risk-note">98.977 linhas · 36.048 pedidos</small></article>
-        <article class="metric"><span>ATRASO MÉDIO</span><strong id="bi-delay">1,62 dias</strong><small>Nas entregas sinalizadas com risco</small></article>
-        <article class="metric"><span>VENDAS</span><strong id="bi-sales">US$ 36.784.735</strong><small>Valor movimentado nos pedidos</small></article>
-        <article class="metric"><span>MARGEM NEGATIVA REGISTRADA</span><strong id="bi-loss">US$ 3.883.547</strong><small>Acumulado nas linhas com margem negativa</small></article>
-        <article class="metric"><span>MARGEM NEGATIVA EM LINHAS COM RISCO</span><strong id="bi-late-loss">US$ 2.153.627</strong><small id="bi-loss-share">55,5% do total · 18.553 linhas</small></article>
-        <article class="metric"><span>8 PRODUTOS MAIS NEGATIVOS</span><strong id="bi-top8">84,6%</strong><small>Participação no total de margem negativa</small></article>
+        <article class="metric"><span>LINHAS ANALISADAS</span><strong id="bi-lines">180.519</strong><small id="bi-lines-note">65.752 Pedidos Únicos</small></article>
+        <article class="metric"><span>LINHAS COM RISCO</span><strong id="bi-risk">54,8%</strong><small id="bi-risk-note">98.977 Linhas · 36.048 Pedidos</small></article>
+        <article class="metric"><span>ATRASO MÉDIO (COM RISCO)</span><strong id="bi-delay">1,6 Dias</strong><small>Média nas Entregas Sinalizadas com Risco</small></article>
+        <article class="metric"><span>VENDAS BRUTAS</span><strong id="bi-sales">US$ 36.784.735</strong><small>Valor Movimentado nos Pedidos</small></article>
+        <article class="metric"><span>MARGEM NEGATIVA REGISTRADA</span><strong id="bi-loss">US$ 3.883.547</strong><small>Acumulado Bruto nas Linhas Negativas</small></article>
+        <article class="metric"><span>MARGEM NEGATIVA COM RISCO</span><strong id="bi-late-loss">US$ 2.153.627</strong><small id="bi-loss-share">55,5% do Total · 18.553 Linhas</small></article>
+        <article class="metric"><span>8 PRODUTOS MAIS NEGATIVOS</span><strong id="bi-top8">84,6%</strong><small>Participação no Total de Margem Negativa</small></article>
       </div>
+
       <div class="bi-grid">
-        <article class="card"><span class="eyebrow">MODALIDADE DE ENTREGA</span><h2>Margem negativa em linhas com risco</h2><div id="bi-modes" class="chart-list"><div class="chart-row"><div class="chart-label"><b>Standard Class</b><small>38,1% risco · 107.752 linhas</small></div><div class="chart-track"><i style="width:100.0%"></i></div><strong>US$ 907.022</strong></div><div class="chart-row"><div class="chart-label"><b>Second Class</b><small>76,6% risco · 35.216 linhas</small></div><div class="chart-track"><i style="width:66.4%"></i></div><strong>US$ 602.046</strong></div><div class="chart-row"><div class="chart-label"><b>First Class</b><small>95,3% risco · 27.814 linhas</small></div><div class="chart-track"><i style="width:60.3%"></i></div><strong>US$ 546.541</strong></div><div class="chart-row"><div class="chart-label"><b>Same Day</b><small>45,7% risco · 9.737 linhas</small></div><div class="chart-track"><i style="width:10.8%"></i></div><strong>US$ 98.017</strong></div></div></article>
-        <article class="card"><span class="eyebrow">DESTINOS</span><h2>Regiões com maior margem negativa em linhas com risco</h2><div id="bi-regions" class="chart-list"><div class="chart-row"><div class="chart-label"><b>Western Europe</b><small>27.109 linhas · 55,9% risco</small></div><div class="chart-track"><i style="width:100.0%"></i></div><strong>US$ 353.025</strong></div><div class="chart-row"><div class="chart-label"><b>Central America</b><small>28.341 linhas · 54,8% risco</small></div><div class="chart-track"><i style="width:92.7%"></i></div><strong>US$ 327.132</strong></div><div class="chart-row"><div class="chart-label"><b>South America</b><small>14.935 linhas · 54,3% risco</small></div><div class="chart-track"><i style="width:48.0%"></i></div><strong>US$ 169.334</strong></div><div class="chart-row"><div class="chart-label"><b>Northern Europe</b><small>9.792 linhas · 54,0% risco</small></div><div class="chart-track"><i style="width:35.9%"></i></div><strong>US$ 126.661</strong></div><div class="chart-row"><div class="chart-label"><b>Southern Europe</b><small>9.431 linhas · 54,4% risco</small></div><div class="chart-track"><i style="width:33.0%"></i></div><strong>US$ 116.631</strong></div><div class="chart-row"><div class="chart-label"><b>Southeast Asia</b><small>9.539 linhas · 55,5% risco</small></div><div class="chart-track"><i style="width:33.0%"></i></div><strong>US$ 116.417</strong></div><div class="chart-row"><div class="chart-label"><b>Oceania</b><small>10.148 linhas · 54,0% risco</small></div><div class="chart-track"><i style="width:32.8%"></i></div><strong>US$ 115.770</strong></div><div class="chart-row"><div class="chart-label"><b>Caribbean</b><small>8.318 linhas · 53,1% risco</small></div><div class="chart-track"><i style="width:27.2%"></i></div><strong>US$ 96.132</strong></div></div></article>
+        <article class="card">
+          <div class="card-head">
+            <div><span class="eyebrow">MODALIDADE DE ENTREGA</span><h2>Margem Negativa em Linhas com Risco</h2></div>
+            <span class="tag observed">Observado</span>
+          </div>
+          <div id="bi-modes" class="chart-list"></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <div><span class="eyebrow">DESTINOS</span><h2>Regiões com Maior Margem Negativa em Risco</h2></div>
+            <span class="tag observed">Observado</span>
+          </div>
+          <div id="bi-regions" class="chart-list"></div>
+        </article>
       </div>
+
       <div class="bi-grid">
-        <article class="card"><span class="eyebrow">PRODUTOS E DIMENSÕES DE REFERÊNCIA</span><h2>8 produtos concentram 84,6% da margem negativa</h2><div id="bi-products" class="chart-list"><div class="chart-row"><div class="chart-label"><b>Field &amp; Stream Sportsman 16 Gun Fire Safe</b><small>Em linhas com risco: US$ 405.166 · 54,9% risco · 125,0 kg / 536.250 cm³</small></div><div class="chart-track"><i style="width:100.0%"></i></div><strong>US$ 728.571</strong></div><div class="chart-row"><div class="chart-label"><b>Perfect Fitness Perfect Rip Deck</b><small>Em linhas com risco: US$ 247.965 · 55,0% risco · 4,3 kg / 33.320 cm³</small></div><div class="chart-track"><i style="width:61.9%"></i></div><strong>US$ 450.978</strong></div><div class="chart-row"><div class="chart-label"><b>Diamondback Women&#x27;s Serene Classic Comfort Bi</b><small>Em linhas com risco: US$ 254.026 · 54,5% risco · 18,5 kg / 255.360 cm³</small></div><div class="chart-track"><i style="width:60.8%"></i></div><strong>US$ 443.082</strong></div><div class="chart-row"><div class="chart-label"><b>Nike Men&#x27;s Free 5.0+ Running Shoe</b><small>Em linhas com risco: US$ 224.661 · 54,5% risco · 0,8 kg / 10.920 cm³</small></div><div class="chart-track"><i style="width:54.9%"></i></div><strong>US$ 400.015</strong></div><div class="chart-row"><div class="chart-label"><b>Pelican Sunstream 100 Kayak</b><small>Em linhas com risco: US$ 181.454 · 54,8% risco · 19,0 kg / 837.000 cm³</small></div><div class="chart-track"><i style="width:45.7%"></i></div><strong>US$ 332.804</strong></div><div class="chart-row"><div class="chart-label"><b>Nike Men&#x27;s Dri-FIT Victory Golf Polo</b><small>Em linhas com risco: US$ 180.749 · 54,6% risco · 0,3 kg / 2.496 cm³</small></div><div class="chart-track"><i style="width:44.4%"></i></div><strong>US$ 323.773</strong></div><div class="chart-row"><div class="chart-label"><b>Nike Men&#x27;s CJ Elite 2 TD Football Cleat</b><small>Em linhas com risco: US$ 171.881 · 54,5% risco · 1,1 kg / 10.920 cm³</small></div><div class="chart-track"><i style="width:42.4%"></i></div><strong>US$ 309.270</strong></div><div class="chart-row"><div class="chart-label"><b>O&#x27;Brien Men&#x27;s Neoprene Life Vest</b><small>Em linhas com risco: US$ 167.366 · 54,8% risco · 1,2 kg / 26.400 cm³</small></div><div class="chart-track"><i style="width:41.0%"></i></div><strong>US$ 298.637</strong></div></div></article>
+        <article class="card">
+          <div class="card-head">
+            <div><span class="eyebrow">PRODUTOS E DIMENSÕES</span><h2>8 Produtos Concentram 84,6% da Margem Negativa</h2></div>
+            <span class="tag observed">Observado</span>
+          </div>
+          <div id="bi-products" class="chart-list"></div>
+        </article>
+
         <div class="proposal-stack">
-          <article class="card bi-simulator"><span class="eyebrow">CENÁRIO DA PROPOSTA</span><h2>CD europeu + parceiros nos EUA e China</h2><label class="bi-slider" for="bi-reduction">Redução simulada no risco de atraso <b id="bi-reduction-value">10%</b><input id="bi-reduction" data-europe-risk="55.21" data-europe-risk-lines="27743" type="range" min="0" max="50" value="10" step="1"></label><div id="bi-scenario-chart" class="scenario-bars"><div class="scenario-bar-row"><span>Risco atual na Europa</span><div class="chart-track"><i style="width:100%"></i></div><b>55,2%</b></div><div class="scenario-bar-row"><span>Risco no cenário</span><div class="chart-track"><i class="scenario-fill" style="width:90%"></i></div><b>49,7%</b></div></div><div class="scenario-result"><b id="bi-scenario-lines">2.774</b><span>linhas com risco a menos no cenário</span></div></article>
-          <div class="section-title"><div><span class="eyebrow">PROPOSTA DE AÇÃO</span><h2>Frentes prioritárias</h2></div></div>
-      <div id="bi-recommendations" class="bi-grid"><article class="recommendation"><h3>Investigar promessa First Class</h3><p>First Class tem 95,32% de linhas com risco em 27.814 linhas. Revisar promessa e capacidade por produto e rota.</p></article><article class="recommendation"><h3>Dimensionar piloto na Europa Ocidental</h3><p>A região tem 27.109 linhas e US$ 5.894.381 em vendas históricas; validar estoque, cobertura e custo do CD.</p></article><article class="recommendation"><h3>Definir SLA de parceiros nos EUA e China</h3><p>Comparar prazo, custo total, cobertura e penalidades por rota antes de terceirizar a operação.</p></article></div>
+          <article class="card bi-simulator">
+            <div class="card-head">
+              <div><span class="eyebrow">CENÁRIO DA PROPOSTA</span><h2>CD Europeu + Parceiros EUA e China</h2></div>
+              <span class="tag hypothesis">Hipótese</span>
+            </div>
+            <label class="bi-slider" for="bi-reduction">
+              <span>Redução Simulada no Risco de Atraso na Europa</span>
+              <b id="bi-reduction-value">10%</b>
+              <input id="bi-reduction" data-europe-risk="55.21" data-europe-risk-lines="27743" type="range" min="0" max="50" value="10" step="1">
+            </label>
+            <div id="bi-scenario-chart" class="scenario-bars"></div>
+            <div class="scenario-result">
+              <b id="bi-scenario-lines">2.774</b>
+              <span>Linhas com Risco Potencialmente Reduzidas no Cenário</span>
+            </div>
+          </article>
+
+          <div class="section-title">
+            <div><span class="eyebrow">PROPOSTA DE AÇÃO</span><h2>Frentes Prioritárias</h2></div>
+          </div>
+          <div id="bi-recommendations" class="recommendations-list"></div>
+        </div>
+      </div>
+
+      <div id="bi-sources" class="bi-sources"></div>
+      <p id="bi-warning" class="disclaimer"></p>
+    </section>
+
+    <section class="page" id="routes">
+      <div class="page-heading">
+        <span class="eyebrow">3. GARGALOS POR ROTA</span>
+        <h1>Rotas e Atrasos</h1>
+        <p>Cruze volume, taxa de risco, atraso médio e resultado financeiro por sub-região e país de destino.</p>
+      </div>
+
+      <div class="filters card">
+        <label for="routes-region-filter">
+          <span>Região de Destino</span>
+          <select id="routes-region-filter">
+            <option value="Todas">Todas as Regiões</option>
+            <option value="América do Norte">América do Norte</option>
+            <option value="Europa">Europa</option>
+            <option value="Ásia">Ásia</option>
+            <option value="América do Sul">América do Sul</option>
+            <option value="Oceania">Oceania</option>
+            <option value="África">África</option>
+          </select>
+        </label>
+        <label for="routes-mode-filter">
+          <span>Modalidade</span>
+          <select id="routes-mode-filter">
+            <option value="Todas">Todas as Modalidades</option>
+            <option value="Primeira Classe">Primeira Classe</option>
+            <option value="Segunda Classe">Segunda Classe</option>
+            <option value="Classe Padrão">Classe Padrão</option>
+            <option value="Mesmo Dia">Mesmo Dia</option>
+          </select>
+        </label>
+        <label for="routes-sort-filter">
+          <span>Ordenar Por</span>
+          <select id="routes-sort-filter">
+            <option value="impact">Maior Impacto (Volume × Risco)</option>
+            <option value="risk">Maior Taxa de Risco (%)</option>
+            <option value="volume">Maior Volume de Linhas</option>
+            <option value="loss">Maior Margem Negativa (US$)</option>
+            <option value="avg_delay">Maior Atraso Médio (Dias)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="metrics routes-kpis" aria-live="polite">
+        <article class="metric">
+          <span>LINHAS / PEDIDOS NO RECORTE</span>
+          <strong id="rt-lines">180.519</strong>
+          <small id="rt-orders">65.752 Pedidos Únicos</small>
+        </article>
+        <article class="metric">
+          <span>RISCO DE ATRASO NO RECORTE</span>
+          <strong id="rt-risk">54,8%</strong>
+          <small id="rt-risk-lines">98.977 Linhas com Risco</small>
+        </article>
+        <article class="metric">
+          <span>ATRASO MÉDIO NO RECORTE</span>
+          <strong id="rt-delay">0,9 Dias</strong>
+          <small>Média Entre Todas as Linhas Filtradas</small>
+        </article>
+        <article class="metric">
+          <span>VENDAS / RESULTADO NO RECORTE</span>
+          <strong id="rt-sales">US$ 36.784.735</strong>
+          <small id="rt-profit">Lucro Líquido e Margem Negativa</small>
+        </article>
+      </div>
+
+      <div class="card routes-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">DESTINOS PRIORITÁRIOS</span>
+            <h2>Sub-Região → País de Destino</h2>
+          </div>
+          <span class="tag observed">Observado no CSV</span>
+        </div>
+        <div id="routes-list" class="routes-list" aria-live="polite">
+          <div class="route-empty">Carregando Rotas…</div>
+        </div>
+        <p class="note" id="routes-note">Recorte Observado no CSV por Sub-Região e País de Destino. O Arquivo Não Informa a Localização dos CDs de Origem.</p>
+      </div>
+
+      <div class="card routes-insight">
+        <span class="eyebrow">COMO INTERPRETAR</span>
+        <h2>Atraso Percentual Precisa de Contexto de Volume</h2>
+        <p>Uma taxa de risco alta em poucos pedidos pode gerar impacto financeiro menor do que uma taxa moderada em rotas de alto volume. Use o seletor de ordenação para alternar entre impacto combinado, risco percentual, volume e margem negativa.</p>
+      </div>
+    </section>
+
+    <section class="page" id="predict">
+      <div class="page-heading">
+        <span class="eyebrow">4. TESTAR PEDIDO (IA)</span>
+        <h1>Simulador de Alerta de Pedido Antes do Envio</h1>
+        <p>Teste o modelo preditivo treinado para estimar o risco de atraso e obter a recomendação operacional ao gestor.</p>
+      </div>
+
+      <div id="predict-unavailable" class="warning-banner" role="status" hidden></div>
+
+      <div class="card presets-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">CENÁRIOS RÁPIDOS PARA DEMO</span>
+            <h2>Simulação em 1 Clique</h2>
+          </div>
+          <span class="tag observed">Modelo Preditivo</span>
+        </div>
+        <div id="predict-presets" class="presets-row"></div>
+      </div>
+
+      <div class="predict-grid">
+        <form id="predict-form" class="card predict-form" novalidate>
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">PARÂMETROS DO PEDIDO</span>
+              <h2>Configurar Envio</h2>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label for="pred-mode">
+              <span>Modalidade de Envio</span>
+              <select id="pred-mode" required></select>
+            </label>
+            <label for="pred-scheduled">
+              <span>Prazo Programado (Dias)</span>
+              <input id="pred-scheduled" type="number" min="0" max="30" step="1" value="1" required>
+            </label>
+            <label for="pred-region">
+              <span>Sub-Região de Destino</span>
+              <select id="pred-region" required></select>
+            </label>
+            <label for="pred-country">
+              <span>País de Destino</span>
+              <select id="pred-country" required></select>
+            </label>
+            <label for="pred-category">
+              <span>Categoria do Produto</span>
+              <select id="pred-category" required></select>
+            </label>
+            <label for="pred-product">
+              <span>Produto</span>
+              <select id="pred-product" required></select>
+            </label>
+            <label for="pred-quantity">
+              <span>Quantidade</span>
+              <input id="pred-quantity" type="number" min="1" max="1000" step="1" value="1" required>
+            </label>
+            <label for="pred-price">
+              <span>Preço Unitário (US$)</span>
+              <input id="pred-price" type="number" min="0" step="0.01" value="399.98" required>
+            </label>
+            <label for="pred-month">
+              <span>Mês do Pedido</span>
+              <select id="pred-month" required>
+                <option value="1">1 · Janeiro</option>
+                <option value="2">2 · Fevereiro</option>
+                <option value="3">3 · Março</option>
+                <option value="4">4 · Abril</option>
+                <option value="5">5 · Maio</option>
+                <option value="6">6 · Junho</option>
+                <option value="7">7 · Julho</option>
+                <option value="8">8 · Agosto</option>
+                <option value="9">9 · Setembro</option>
+                <option value="10">10 · Outubro</option>
+                <option value="11" selected>11 · Novembro</option>
+                <option value="12">12 · Dezembro</option>
+              </select>
+            </label>
+            <label for="pred-weekday">
+              <span>Dia da Semana</span>
+              <select id="pred-weekday" required>
+                <option value="0">Segunda-Feira</option>
+                <option value="1">Terça-Feira</option>
+                <option value="2" selected>Quarta-Feira</option>
+                <option value="3">Quinta-Feira</option>
+                <option value="4">Sexta-Feira</option>
+                <option value="5">Sábado</option>
+                <option value="6">Domingo</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary" id="predict-submit">Calcular Probabilidade de Risco</button>
+          </div>
+        </form>
+
+        <article class="card predict-result-card" id="predict-result" aria-live="polite">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">RESULTADO DO MODELO</span>
+              <h2>Avaliação de Risco e Ação</h2>
+            </div>
+            <span class="tag hypothesis">Estimativa do Modelo</span>
+          </div>
+          <div class="predict-empty" id="predict-result-body">
+            <p>Escolha um cenário rápido acima ou configure os parâmetros do pedido e clique em <b>Calcular Probabilidade de Risco</b>.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="scenarios">
+      <div class="page-heading">
+        <span class="eyebrow">5. SIMULAR CD EUROPA</span>
+        <h1>Cenários de Centros de Distribuição</h1>
+        <p>Compare a operação histórica registrada com a proposta de CD próprio na Europa e operadores logísticos (3PL).</p>
+      </div>
+
+      <div class="segmented" role="tablist" aria-label="Comparação de cenários de rede">
+        <button type="button" class="scenario-tab active" data-scenario="current" role="tab" aria-selected="true">Atual (Observado)</button>
+        <button type="button" class="scenario-tab" data-scenario="proposal" role="tab" aria-selected="false">Proposta (Hipótese)</button>
+      </div>
+
+      <div class="card scenario-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow" id="scenario-label">CENÁRIO OBSERVADO</span>
+            <h2 id="scenario-title">Operação Histórica Registrada</h2>
+          </div>
+          <span class="tag observed" id="scenario-tag">Base CSV</span>
+        </div>
+        <div class="network" id="scenario-network" aria-live="polite"></div>
+        <p id="scenario-copy">Referência histórica calculada no CSV. O arquivo registra destinos, prazos, atrasos e margens, mas não informa a localização nem os custos dos centros de distribuição.</p>
+      </div>
+
+      <div class="card proposal-changes">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">MUDANÇA PROPOSTA</span>
+            <h2>Centro Europeu + Parceiros</h2>
+          </div>
+          <span class="tag hypothesis">Hipótese de Negócio</span>
+        </div>
+        <ul class="clean">
+          <li><b>Europa:</b> Avaliar CD próprio para aproximar estoque e reduzir o tempo de entrega regional.</li>
+          <li><b>América do Norte:</b> Avaliar terceirização da operação com operador logístico (3PL).</li>
+          <li><b>China / Ásia:</b> Avaliar parceiro regional conforme cobertura, prazo e volume medido.</li>
+        </ul>
+      </div>
+
+      <div class="card compare-card">
+        <span class="eyebrow">O QUE PRECISA SER VALIDADO</span>
+        <h2>Critérios para Decisão Executiva</h2>
+        <div class="compare">
+          <div><b>Serviço</b><small>Prazo Prometido, Acordo de Prazo (SLA) e Taxa de Atraso</small></div>
+          <div><b>Financeiro</b><small>Custo Total por Pedido, Frete e Impostos</small></div>
+          <div><b>Estoque</b><small>Ruptura, Giro e Capital Imobilizado</small></div>
+        </div>
+        <p class="note">Sem custos de armazenagem, contratos com operadores logísticos (3PL), impostos e níveis de estoque, o painel não calcula retorno sobre investimento (ROI) nem promete economia.</p>
+      </div>
+
+      <div class="card simulation-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">SIMULAÇÃO EDITÁVEL</span>
+            <h2>Premissas do CD Europeu</h2>
+          </div>
+          <span class="tag hypothesis">Simulação</span>
+        </div>
+        <label for="share">
+          <span>Parcela da Demanda Europeia Atendida Localmente</span>
+          <b id="shareVal">30%</b>
+          <input id="share" type="range" min="0" max="100" value="30">
+        </label>
+        <label for="reduction">
+          <span>Redução Hipotética no Atraso (Dias)</span>
+          <input id="reduction" type="number" min="0" max="30" step="0.5" value="1">
+        </label>
+        <label for="cost">
+          <span>Custo Adicional Estimado por Pedido (US$)</span>
+          <input id="cost" type="number" min="0" step="1" value="0">
+        </label>
+        <button type="button" class="primary" id="simulate">Atualizar Simulação</button>
+        <div id="simulationResult" class="sim-result" aria-live="polite">
+          <p class="note">Ajuste as premissas acima e clique em "Atualizar Simulação" para estimar o efeito hipotético na base europeia.</p>
         </div>
       </div>
     </section>
-    <section class="page" id="routes">
-      <div class="page-heading"><span class="eyebrow">DIAGNÓSTICO</span><h1>Rotas e atrasos</h1><p>Encontre onde volume, atraso e resultado se cruzam.</p></div>
-      <div class="filters card"><label>Região de destino<select><option>Todas as regiões</option><option>Europa</option><option>América do Norte</option><option>Ásia</option></select></label><label>Modalidade<select><option>Todas as modalidades</option><option>First Class</option><option>Second Class</option><option>Standard Class</option></select></label></div>
-      <div class="metrics two"><article class="metric"><span>ATRASO NO DATASET</span><strong>≈55%</strong><small>referência geral do conjunto</small></article><article class="metric"><span>FIRST CLASS</span><strong>95,3%</strong><small>atraso no recorte analisado pelo grupo</small></article></div>
-      <div class="card routes-card"><div class="card-head"><div><span class="eyebrow">ROTAS PARA INVESTIGAR</span><h2>Maior concentração de prejuízo</h2></div><span class="tag hypothesis">Análise do grupo</span></div>
-        <div class="route"><div class="route-icon">↗</div><div><b>Origem → destino</b><small>Rota ilustrativa · carregar rota do CSV</small></div><span class="risk">Investigar</span></div>
-        <div class="route"><div class="route-icon">↗</div><div><b>Produto → região</b><small>Volume, atraso médio e margem observada</small></div><span class="risk">Investigar</span></div>
-        <p class="note">A tabela final deve usar origem/destino e medidas calculadas do dataset. Evite inferir a localização do CD pela rota se ela não estiver nos dados.</p>
-      </div>
-      <div class="card routes-insight"><span class="eyebrow">COMO LER</span><h2>Atraso não explica tudo sozinho</h2><p>Cruze taxa de atraso com quantidade de pedidos, valor movimentado e margem. Um percentual alto em poucos pedidos pode ter efeito diferente de um percentual moderado numa rota de grande volume.</p></div>
-    </section>
-    <section class="page" id="scenarios">
-      <div class="page-heading"><span class="eyebrow">ANÁLISE DE DECISÃO</span><h1>Cenários de CDs</h1><p>Compare a configuração atual com a proposta de rede.</p></div>
-      <div class="segmented"><button class="scenario-tab active" data-scenario="current">Atual</button><button class="scenario-tab" data-scenario="proposal">Proposta</button></div>
-      <div class="card scenario-card"><div class="card-head"><div><span class="eyebrow" id="scenario-label">CENÁRIO OBSERVADO</span><h2 id="scenario-title">Rede atual</h2></div><span class="tag observed" id="scenario-tag">Base CSV</span></div><div class="network"><div class="node"><span>CD</span><b>EUA</b><small>Operação atual</small></div><div class="connector"><i></i><small>fluxo de pedidos</small></div><div class="node"><span>DESTINOS</span><b>Mercados</b><small>Conforme o CSV</small></div></div><p id="scenario-copy">Referência histórica. O CSV registra pedidos, atrasos e resultados, mas não descreve todos os custos e capacidades dos centros de distribuição.</p></div>
-      <div class="card proposal-changes"><span class="eyebrow">MUDANÇA PROPOSTA</span><h2>Centro europeu + parceiros</h2><ul class="clean"><li><b>Europa:</b> avaliar um CD próprio para atender a demanda regional.</li><li><b>América do Norte:</b> avaliar terceirização da operação atual.</li><li><b>China/Ásia:</b> avaliar parceiro logístico conforme cobertura e demanda medida.</li></ul><div class="tag hypothesis">Hipótese de negócio · não é resultado comprovado</div></div>
-      <div class="card compare-card"><span class="eyebrow">O QUE PRECISA SER COMPARADO</span><div class="compare"><div><b>Serviço</b><small>prazo e taxa de atraso</small></div><div><b>Financeiro</b><small>custo total por pedido</small></div><div><b>Estoque</b><small>ruptura, giro e capital imobilizado</small></div></div><p class="note">Sem custos de armazenagem, contratos 3PL, impostos e níveis de estoque, o painel não calcula ROI nem promete economia.</p></div>
-    </section>
+
     <section class="page" id="assumptions">
-      <div class="page-heading"><span class="eyebrow">TRANSPARÊNCIA</span><h1>Premissas</h1><p>Separe o que observamos do que ainda precisamos descobrir.</p></div>
-      <div class="legend card"><div><i class="dot green"></i><span><b>Observado</b><small>medido diretamente no CSV</small></span></div><div><i class="dot amber"></i><span><b>Hipótese</b><small>precisa de validação com a empresa</small></span></div><div><i class="dot gray"></i><span><b>Faltante</b><small>não existe no dataset disponível</small></span></div></div>
-      <div class="card assumptions"><h2>Dados observados</h2><ul class="clean"><li>Pedido, produto, modalidade, prazo prometido e atraso registrado.</li><li>Região/país de destino, volume e medidas financeiras disponíveis.</li><li>Desempenho do baseline no split temporal por pedido.</li></ul><span class="tag observed">CSV + avaliação do modelo</span></div>
-      <div class="card assumptions"><h2>Hipóteses da proposta</h2><ul class="clean"><li>Um CD europeu pode aproximar estoque da demanda regional.</li><li>Parceiros podem operar mercados fora da Europa.</li><li>Reposição de estoque deve acompanhar demanda e lead time.</li></ul><span class="tag hypothesis">Testar com cenários</span></div>
-      <div class="card assumptions"><h2>Dados ainda necessários</h2><ul class="clean"><li>Custo e capacidade do CD por região.</li><li>Preço, SLA e cobertura de cada operador terceirizado.</li><li>Impostos, custo de transferência, estoque de segurança e ruptura.</li></ul><span class="tag missing">Não disponível no CSV</span></div>
-      <div class="card"><span class="eyebrow">NOTA DE MÉTODO</span><p>O baseline prevê o rótulo histórico de risco de atraso. Ele não estima o efeito causal de abrir, fechar ou terceirizar um centro de distribuição.</p></div>
+      <div class="page-heading">
+        <span class="eyebrow">6. PREMISSAS E LIMITES</span>
+        <h1>Transparência Analítica e Limites dos Dados</h1>
+        <p>Separação explícita entre o que foi medido no CSV, hipóteses de negócio e dados faltantes.</p>
+      </div>
+
+      <div class="legend card">
+        <div><i class="dot green" aria-hidden="true"></i><span><b>Observado</b><small>Medido Diretamente no CSV Histórico</small></span></div>
+        <div><i class="dot amber" aria-hidden="true"></i><span><b>Hipótese</b><small>Cenário Proposto para Validação com a Empresa</small></span></div>
+        <div><i class="dot gray" aria-hidden="true"></i><span><b>Faltante</b><small>Não Existe na Base de Dados Disponível</small></span></div>
+      </div>
+
+      <div class="card assumptions">
+        <div class="card-head"><h2>Dados Observados</h2><span class="tag observed">CSV + Avaliação do Modelo</span></div>
+        <ul class="clean">
+          <li>Pedido, produto, modalidade de frete, prazo prometido e atraso registrado.</li>
+          <li>Região e país de destino, volume de linhas/pedidos e medidas financeiras disponíveis.</li>
+          <li>Desempenho do modelo preditivo em validação temporal por pedido.</li>
+        </ul>
+      </div>
+
+      <div class="card assumptions">
+        <div class="card-head"><h2>Hipóteses da Proposta</h2><span class="tag hypothesis">Testar com Cenários</span></div>
+        <ul class="clean">
+          <li>Um CD europeu pode aproximar estoque da demanda regional na Europa.</li>
+          <li>Operadores logísticos (3PL) podem atender América do Norte e China/Ásia.</li>
+          <li>A reposição de estoque deve acompanhar a demanda e o tempo de entrega por categoria.</li>
+        </ul>
+      </div>
+
+      <div class="card assumptions">
+        <div class="card-head"><h2>Dados Ainda Necessários</h2><span class="tag missing">Não Disponível no CSV</span></div>
+        <ul class="clean">
+          <li>Custo fixo/variável e capacidade instalada dos CDs por região.</li>
+          <li>Preço, acordo de prazo (SLA) contratual e cobertura de cada operador terceirizado.</li>
+          <li>Impostos, custo de transferência entre CDs, estoque de segurança e taxa de ruptura.</li>
+        </ul>
+      </div>
+
+      <div class="card method-note">
+        <span class="eyebrow">NOTA DE MÉTODO</span>
+        <h2>Escopo do Modelo Preditivo</h2>
+        <p>O modelo de referência prevê o indicador histórico de risco de atraso nos pedidos (campo histórico de risco no CSV). Ele aponta entregas com maior probabilidade estatística de atraso, mas não estima o efeito causal de abrir, fechar ou terceirizar um centro de distribuição.</p>
+      </div>
     </section>
   </main>
-  <div class="bottom-nav"><button class="bottom-item active" data-page="overview"><span>⌂</span>Início</button><button class="bottom-item" data-page="bi"><span>▥</span>BI</button><button class="bottom-item" data-page="routes"><span>↗</span>Rotas</button><button class="bottom-item" data-page="scenarios"><span>◉</span>Cenários</button><button class="bottom-item" data-page="assumptions"><span>☷</span>Premissas</button></div>
-</div><script src="app.js?v=routes-scenarios-layout-2"></script></body></html>
 
+  <nav class="bottom-nav" aria-label="Navegação rápida">
+    <button type="button" class="bottom-item active" data-page="overview" aria-current="page"><span aria-hidden="true">⌂</span>1. Resumo</button>
+    <button type="button" class="bottom-item" data-page="bi"><span aria-hidden="true">▥</span>2. BI</button>
+    <button type="button" class="bottom-item" data-page="routes"><span aria-hidden="true">↗</span>3. Rotas</button>
+    <button type="button" class="bottom-item" data-page="predict"><span aria-hidden="true">⚡</span>4. IA</button>
+    <button type="button" class="bottom-item" data-page="scenarios"><span aria-hidden="true">◉</span>5. CD</button>
+    <button type="button" class="bottom-item" data-page="assumptions"><span aria-hidden="true">☷</span>6. Limites</button>
+  </nav>
+</div>
+<script src="app.js?v=ux-exec-3"></script>
+</body>
+</html>
