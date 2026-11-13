@@ -130,3 +130,18 @@ Reservar 3 minutos para perguntas. Preparar respostas sobre execução do zero, 
 O artefato local do modelo, a API e a documentação foram preparados nesta branch e publicados no PR #4. A chamada da API e o consumo por uma tela React de demonstração foram verificados localmente. A tela React original do Sábado 3 não estava disponível para teste.
 
 A conclusão do EAD de Machine Learning e GenAI e a revisão do deck por mentor dependem dos integrantes/plataforma do curso; não são verificáveis neste repositório. Antes da entrega, o grupo deve confirmar esses itens e a participação dos cinco integrantes na apresentação. A imagem Docker deve ser construída e executada pelo avaliador/grupo no ambiente-alvo; os comandos acima reproduzem o serviço localmente.
+
+
+## Dashboard executivo de logística
+
+O dashboard interativo apresenta indicadores de atraso, margem negativa registrada, produtos e regiões, além de um cenário hipotético para a proposta de CD europeu e parceiros nos EUA e na China. Ele usa os CSVs já incluídos em `data/`.
+
+### Executar localmente
+
+Com o ambiente virtual ativado e as dependências instaladas:
+
+```powershell
+python -m uvicorn server:app --app-dir dashboard --host 127.0.0.1 --port 8010 --reload
+```
+
+Abra `http://127.0.0.1:8010`. A porta 8010 mantém este dashboard separado da API de previsão, que usa a porta 8000. O serviço lê `data/DataCoSupplyChainDataset.csv`, `data/product_dimensions.csv` e `data/tokenized_access_logs.csv`.
